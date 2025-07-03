@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dream Journal</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,175 +14,201 @@
       max-width: 700px;
       margin: auto;
     }
-    h1 {
-      margin-bottom: 0.3rem;
+
+    .textarea-wrapper {
+      position: relative;
     }
-    .warning {
-      color: red;
-      font-weight: bold;
-      margin-bottom: 2rem;
-    }
-    input, textarea {
+
+    textarea {
       width: 100%;
-      padding: 0.8rem;
-      margin-top: 0.5rem;
+      height: 150px;
+      padding: 1rem;
       background-color: #222;
+      color: #fff;
       border: 1px solid #444;
-      color: white;
       border-radius: 8px;
+      box-sizing: border-box;
+      resize: vertical;
+      font-size: 1rem;
     }
+
+    .icon-btn {
+      position: absolute;
+      bottom: 10px;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+      fill: #ccc;
+      stroke: #ccc;
+    }
+
+    .icon-btn:hover {
+      opacity: 1;
+    }
+
+    .clear-icon {
+      right: 40px;
+    }
+
+    .micro-icon {
+      right: 10px;
+    }
+
     button {
       background-color: #4CAF50;
       color: white;
       padding: 0.6rem 1.2rem;
       margin-top: 1rem;
-      margin-right: 0.5rem;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
     }
+
+    button:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+    }
+
+    .delete-btn,
+    .delete-dream-btn,
+    .delete-all-btn {
+      background-color: #e74c3c;
+    }
+
+    .delete-btn:hover,
+    .delete-dream-btn:hover,
+    .delete-all-btn:hover {
+      background-color: #c0392b;
+    }
+
     ul {
       list-style: none;
       padding: 0;
     }
+
     li {
       background-color: #1e1e1e;
       padding: 1rem;
       border-radius: 6px;
       margin-top: 1rem;
-      position: relative;
+      overflow-x: hidden;
     }
+
+    li div {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
     .date {
       font-size: 0.8rem;
       color: #aaa;
+      margin-top: 0.5rem;
     }
-    .delete-btn {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
-      background: #e74c3c;
+
+    .delete-dream-btn {
       border: none;
       color: white;
       padding: 0.3rem 0.6rem;
       border-radius: 4px;
       cursor: pointer;
+      float: right;
+      margin-top: 0.5rem;
+      clear: both;
+      display: inline-block;
     }
-    .no-dreams {
-      color: #bbb;
-      font-style: italic;
-      margin-top: 2rem;
-      text-align: center;
+
+    .warning {
+      color: #ff4d4d;
+      font-size: 0.9rem;
+      margin-top: -1rem;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
 <body>
-
   <h1>🌙 My Dream Journal</h1>
-  <div class="warning">
-    ⚠️ All data is stored locally on this device. <br>
+  <p class="warning">
+    ⚠️ All data is stored locally on this device.<br>
     If you switch browsers or devices, your dreams will be lost. Nothing leaves your machine.
+  </p>
+
+  <div class="textarea-wrapper">
+    <textarea id="dreamInput" placeholder="Write your dream here..."></textarea>
+    <svg class="icon-btn clear-icon" onclick="clearText()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <svg class="icon-btn micro-icon" onclick="startDictation()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M12 1a3 3 0 00-3 3v7a3 3 0 006 0V4a3 3 0 00-3-3zm5 10a5 5 0 01-10 0H5a7 7 0 0014 0h-2zm-5 10v-3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   </div>
 
-  <textarea id="dreamInput" placeholder="Write your dream here..."></textarea><br />
   <label>
     <input type="checkbox" id="lucidCheckbox" /> 🌟 It was a lucid dream
   </label><br />
-  <button id="saveBtn">💾 Save</button>
-  <button id="exportBtn">📥 Export</button>
-  <button id="deleteAllBtn">🗑️ Delete All</button>
+  <button onclick="saveDream()">💾 Save</button>
+  <button onclick="exportDreams()">📅 Export as text</button>
+  <button class="delete-all-btn" onclick="confirmDeleteAll()">🗑️ Delete all dreams</button>
 
   <h2>My Dreams</h2>
   <label for="filterSelect">🔍 Filter:</label>
-  <select id="filterSelect">
+  <select id="filterSelect" onchange="loadDreams()">
     <option value="all">All</option>
     <option value="lucid">Lucid only</option>
-    <option value="non-lucid">Non-lucid only</option>
+    <option value="non-lucid">Non-lucid</option>
   </select>
-
   <ul id="dreamList"></ul>
-  <div id="emptyMsg" class="no-dreams" style="display:none;">No dreams to display.</div>
 
   <script>
     const dreamInput = document.getElementById("dreamInput");
     const lucidCheckbox = document.getElementById("lucidCheckbox");
     const dreamList = document.getElementById("dreamList");
     const filterSelect = document.getElementById("filterSelect");
-    const saveBtn = document.getElementById("saveBtn");
-    const exportBtn = document.getElementById("exportBtn");
-    const deleteAllBtn = document.getElementById("deleteAllBtn");
-    const emptyMsg = document.getElementById("emptyMsg");
-
-    saveBtn.addEventListener("click", saveDream);
-    exportBtn.addEventListener("click", exportDreams);
-    deleteAllBtn.addEventListener("click", confirmDeleteAll);
-    filterSelect.addEventListener("change", loadDreams);
 
     function saveDream() {
       const text = dreamInput.value.trim();
       const isLucid = lucidCheckbox.checked;
-      if (!text) {
-        dreamInput.focus();
-        return;
-      }
+      if (!text) return;
       const date = new Date().toLocaleString();
       const dreams = JSON.parse(localStorage.getItem("dreams") || "[]");
-      const id = Date.now() + Math.floor(Math.random() * 1000);
-      dreams.unshift({ id, text, date, lucid: isLucid });
+      dreams.unshift({ text, date, lucid: isLucid });
       localStorage.setItem("dreams", JSON.stringify(dreams));
       dreamInput.value = "";
       lucidCheckbox.checked = false;
       loadDreams();
-      showToast("Dream saved!");
     }
 
     function loadDreams() {
       const dreams = JSON.parse(localStorage.getItem("dreams") || "[]");
       const filter = filterSelect.value;
       dreamList.innerHTML = "";
-      let count = 0;
-      dreams.forEach((dream) => {
-        if (
-          (filter === "lucid" && !dream.lucid) ||
-          (filter === "non-lucid" && dream.lucid)
-        ) return;
-
+      dreams.forEach((dream, index) => {
+        if (filter === "lucid" && !dream.lucid) return;
+        if (filter === "non-lucid" && dream.lucid) return;
         const li = document.createElement("li");
-        const textDiv = document.createElement("div");
-        textDiv.textContent = dream.text;
-        li.appendChild(textDiv);
-
-        const dateDiv = document.createElement("div");
-        dateDiv.className = "date";
-        dateDiv.textContent = dream.date + (dream.lucid ? " 🌟 Lucid dream" : "");
-        li.appendChild(dateDiv);
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "delete-btn";
-        delBtn.textContent = "Delete";
-        delBtn.addEventListener("click", () => deleteDream(dream.id));
-        li.appendChild(delBtn);
-
+        li.innerHTML = `
+          <div>${dream.text}</div>
+          <div class='date'>${dream.date}${dream.lucid ? " 🌟 Lucid Dream" : ""}</div>
+          <button class='delete-dream-btn delete-btn' onclick='deleteDream(${index})'>Delete</button>
+        `;
         dreamList.appendChild(li);
-        count++;
       });
-
-      emptyMsg.style.display = count === 0 ? "block" : "none";
     }
 
-    function deleteDream(id) {
-      if (!confirm("Delete this dream?")) return;
+    function deleteDream(index) {
+      if (!confirm("Are you sure you want to delete this dream?")) return;
       const dreams = JSON.parse(localStorage.getItem("dreams") || "[]");
-      const updated = dreams.filter(dream => dream.id !== id);
-      localStorage.setItem("dreams", JSON.stringify(updated));
+      dreams.splice(index, 1);
+      localStorage.setItem("dreams", JSON.stringify(dreams));
       loadDreams();
-      showToast("Dream deleted.");
     }
 
     function confirmDeleteAll() {
-      if (!confirm("Delete all dreams?")) return;
+      if (!confirm("Delete ALL dreams? This cannot be undone.")) return;
       localStorage.removeItem("dreams");
       loadDreams();
-      showToast("All dreams deleted.");
     }
 
     function exportDreams() {
@@ -191,8 +218,8 @@
         return;
       }
       let content = "Dream Journal\n\n";
-      dreams.forEach((dream, i) => {
-        content += `Dream #${dreams.length - i}\nDate: ${dream.date}${dream.lucid ? " (Lucid)" : ""}\n${dream.text}\n\n`;
+      dreams.forEach((dream, index) => {
+        content += `Dream #${dreams.length - index}\nDate: ${dream.date}${dream.lucid ? " (Lucid)" : ""}\n${dream.text}\n\n`;
       });
       const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -203,33 +230,42 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("Export complete!");
     }
 
-    function showToast(message) {
-      let toast = document.getElementById("toastMsg");
-      if (!toast) {
-        toast = document.createElement("div");
-        toast.id = "toastMsg";
-        toast.style.position = "fixed";
-        toast.style.bottom = "30px";
-        toast.style.left = "50%";
-        toast.style.transform = "translateX(-50%)";
-        toast.style.background = "#333";
-        toast.style.color = "#fff";
-        toast.style.padding = "0.8rem 1.5rem";
-        toast.style.borderRadius = "8px";
-        toast.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
-        toast.style.zIndex = 1000;
-        document.body.appendChild(toast);
-      }
-      toast.textContent = message;
-      toast.style.display = "block";
-      setTimeout(() => { toast.style.display = "none"; }, 1600);
+    function clearText() {
+      dreamInput.value = "";
     }
 
-    // Load dreams on startup
-    loadDreams();
+    function startDictation() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      let finalTranscript = dreamInput.value;
+
+      recognition.onresult = function (event) {
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalTranscript += (finalTranscript && !finalTranscript.endsWith(" ") ? " " : "") + result[0].transcript;
+          } else {
+            interimTranscript += result[0].transcript;
+          }
+        }
+        dreamInput.value = finalTranscript + (interimTranscript ? " " + interimTranscript : "");
+      };
+
+      recognition.onend = function () {
+        dreamInput.value = finalTranscript.trim();
+      };
+
+      recognition.onerror = function (event) {
+        alert("Speech recognition error: " + event.error);
+      };
+
+      recognition.start();
+    }
   </script>
 </body>
 </html>
