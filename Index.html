@@ -128,6 +128,14 @@
     }
   </style>
 </head>
+  <script>
+    const namespace = "journal-de-reves1234567890"; // Mets ton identifiant unique ici
+
+    // Incrémente le compteur à chaque visite
+    fetch(`https://api.countapi.xyz/hit/${namespace}/visits`)
+        .catch(err => console.error("Erreur compteur :", err));
+</script>
+
 <body>
   <h1>🌙 My Dream Journal</h1>
   <p class="warning">
