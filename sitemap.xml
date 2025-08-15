@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Page principale -->
+  <url>
+    <loc>https://moi34567.github.io/Your-Own-Dream-Journal/Index.html</loc>
+    <lastmod>2025-08-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Ajoute ici d’autres pages si tu en crées -->
+  <!-- Exemple :
+  <url>
+    <loc>https://moi34567.github.io/Your-Own-Dream-Journal/about.html</loc>
+    <lastmod>2025-08-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  -->
+</urlset>
